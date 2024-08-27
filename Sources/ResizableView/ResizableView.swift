@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct ResizableView<Content: View>: View {
-    init(size: Binding<CGFloat>, side: Side, onSizeChanged: ((CGFloat) -> Void)? = nil, @ViewBuilder content: @escaping () -> Content) {
+    public init(size: Binding<CGFloat>, side: Side, onSizeChanged: ((CGFloat) -> Void)? = nil, @ViewBuilder content: @escaping () -> Content) {
         _size = size
         self.side = side
         self.content = content
