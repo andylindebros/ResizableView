@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct ResizableView<Content: View>: View {
-    public init(size: Binding<CGFloat>, side: Side, onSizeChanged: ((CGFloat) -> Void)? = nil, @ViewBuilder content: @escaping () -> Content) {
+    public init(size: Binding<CGFloat>, side: ResizableViewSide, onSizeChanged: ((CGFloat) -> Void)? = nil, @ViewBuilder content: @escaping () -> Content) {
         _size = size
         self.side = side
         self.content = content
@@ -11,7 +11,7 @@ public struct ResizableView<Content: View>: View {
     @State private var isPressed: Bool = false
     @Binding private var size: CGFloat
 
-    private let side: Side
+    private let side: ResizableViewSide
     private let content: () -> Content
 
     private let onSizeChanged: ((CGFloat) -> Void)?
@@ -77,66 +77,68 @@ public struct ResizableView<Content: View>: View {
             }
         }
     }
+}
 
-    public enum Side {
-        case leading, trailing, top, bottom
+public enum ResizableViewSide {
+    case leading, trailing, top, bottom
+}
 
-        func setCursor() {
-            switch self {
-            case .leading, .trailing:
-                NSCursor.resizeLeftRight.set()
-            case .top, .bottom:
-                NSCursor.resizeUpDown.set()
-            }
+extension ResizableViewSide {
+    func setCursor() {
+        switch self {
+        case .leading, .trailing:
+            NSCursor.resizeLeftRight.set()
+        case .top, .bottom:
+            NSCursor.resizeUpDown.set()
         }
+    }
 
-        var shouldContentBeBeforeDivider: Bool {
-            switch self {
-            case .trailing, .bottom:
-                true
-            case .leading, .top:
-                false
-            }
+    var shouldContentBeBeforeDivider: Bool {
+        switch self {
+        case .trailing, .bottom:
+            true
+        case .leading, .top:
+            false
         }
+    }
 
-        func calculateSize(from point: CGPoint, in geo: GeometryProxy) -> CGFloat? {
-            switch self {
-            case .leading:
-                geo.frame(in: .global).maxX - point.x
-            case .trailing:
-                point.x > 20 ? point.x - geo.frame(in: .global).minX : nil
-            case .top:
-                geo.frame(in: .global).maxY - point.y
-            case .bottom:
-                point.y > 20 ? point.y - geo.frame(in: .global).minY : nil
-            }
+    func calculateSize(from point: CGPoint, in geo: GeometryProxy) -> CGFloat? {
+        switch self {
+        case .leading:
+            geo.frame(in: .global).maxX - point.x
+        case .trailing:
+            point.x > 20 ? point.x - geo.frame(in: .global).minX : nil
+        case .top:
+            geo.frame(in: .global).maxY - point.y
+        case .bottom:
+            point.y > 20 ? point.y - geo.frame(in: .global).minY : nil
         }
+    }
 
-        @ViewBuilder func size<SizeContent: View>(withValue size: CGFloat, @ViewBuilder content: @escaping () -> SizeContent) -> some View {
-            switch self {
-            case .leading, .trailing:
-                content().frame(width: size)
-            case .top, .bottom:
-                content().frame(height: size)
-            }
+    @ViewBuilder func size<SizeContent: View>(withValue size: CGFloat, @ViewBuilder content: @escaping () -> SizeContent) -> some View {
+        switch self {
+        case .leading, .trailing:
+            content().frame(width: size)
+        case .top, .bottom:
+            content().frame(height: size)
         }
+    }
 
-        @ViewBuilder func stretchContent<SizeContent: View>(@ViewBuilder content: @escaping () -> SizeContent) -> some View {
-            switch self {
-            case .leading, .trailing:
-                content().frame(maxWidth: .infinity)
-            case .top, .bottom:
-                content().frame(maxHeight: .infinity)
-            }
+    @ViewBuilder func stretchContent<SizeContent: View>(@ViewBuilder content: @escaping () -> SizeContent) -> some View {
+        switch self {
+        case .leading, .trailing:
+            content().frame(maxWidth: .infinity)
+        case .top, .bottom:
+            content().frame(maxHeight: .infinity)
         }
+    }
 
-        @ViewBuilder func stretchContainer<SizeContent: View>(@ViewBuilder content: @escaping () -> SizeContent) -> some View {
-            switch self {
-            case .leading, .trailing:
-                content().frame(maxHeight: .infinity)
-            case .top, .bottom:
-                content().frame(maxWidth: .infinity)
-            }
+    @ViewBuilder func stretchContainer<SizeContent: View>(@ViewBuilder content: @escaping () -> SizeContent) -> some View {
+        switch self {
+        case .leading, .trailing:
+            content().frame(maxHeight: .infinity)
+        case .top, .bottom:
+            content().frame(maxWidth: .infinity)
         }
     }
 }
